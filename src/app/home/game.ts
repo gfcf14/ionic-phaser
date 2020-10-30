@@ -7,6 +7,10 @@ export class GameScene extends Phaser.Scene {
   score = 0;
   scoreText: Phaser.GameObjects.Text;
   stars: Phaser.Physics.Arcade.Group;
+  bombs: Phaser.Physics.Arcade.Group;
+  gameOver: boolean;
+  pauseKey: Phaser.Input.Keyboard.Key;
+  isPaused: boolean;
 
   constructor() {
     super({ key: 'game' });
@@ -25,8 +29,19 @@ export class GameScene extends Phaser.Scene {
 
   create() {
     this.add.image(400, 300, 'sky');
-    // this.add.image(400, 300, 'star');
 
+    this.addPlatforms();
+    this.addPlayer();
+    this.addStars();
+
+    this.scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+    this.bombs = this.physics.add.group();
+
+    this.addCollisionEvents();
+    this.addKeyboardEvents();
+  }
+
+  addPlatforms() {
     this.platforms = this.physics.add.staticGroup();
 
     this.platforms.create(400, 568, 'platform').setScale(2).refreshBody();
@@ -34,12 +49,18 @@ export class GameScene extends Phaser.Scene {
     this.platforms.create(600, 400, 'platform');
     this.platforms.create(50, 250, 'platform');
     this.platforms.create(750, 220, 'platform');
+  }
 
+  addPlayer() {
     this.player = this.physics.add.sprite(100, 450, 'dude');
 
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
 
+    this.addPlayerAnimations();
+  }
+
+  addPlayerAnimations() {
     this.anims.create({
       key: 'left',
       frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
@@ -59,13 +80,9 @@ export class GameScene extends Phaser.Scene {
       frameRate: 10,
       repeat: -1
     });
+  }
 
-    this.scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
-
-    this.physics.add.collider(this.player, this.platforms);
-
-    this.cursors = this.input.keyboard.createCursorKeys();
-
+  addStars() {
     this.stars = this.physics.add.group({
       key: 'star',
       repeat: 11,
@@ -74,8 +91,35 @@ export class GameScene extends Phaser.Scene {
     this.stars.children.iterate( (child: Phaser.Physics.Arcade.Sprite) => {
       child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
     });
+  }
+
+  addCollisionEvents() {
+    this.physics.add.collider(this.player, this.platforms);
     this.physics.add.collider(this.stars, this.platforms);
+    this.physics.add.collider(this.bombs, this.platforms);
+    this.physics.add.collider(this.player, this.bombs, this.hitBomb, null, this);
+
     this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
+  }
+
+  addKeyboardEvents() {
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.pauseKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+    // this.pauseKey.on('up', (e) => {
+    //   console.log('toggling pause now');
+    //   this.togglePause();
+    // });
+  }
+
+  togglePause() {
+    if (this.isPaused) {
+      this.scene.resume('game');
+    } else {
+      this.scene.pause();
+    }
+
+    this.isPaused != this.isPaused;
   }
 
   collectStar(player, star) {
@@ -83,6 +127,28 @@ export class GameScene extends Phaser.Scene {
 
     this.score += 10;
     this.scoreText.setText(`Score: ${this.score}`);
+
+    if (this.stars.countActive(true) === 0) {
+      this.stars.children.iterate((child: Phaser.Physics.Arcade.Sprite) => {
+        child.enableBody(true, child.x, 0, true, true);
+      });
+
+      let x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+      let bomb = this.bombs.create(x, 16, 'bomb');
+
+      bomb.setBounce(1);
+      bomb.setCollideWorldBounds(true);
+      bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+    }
+  }
+
+  hitBomb (player, bomb) {
+    this.physics.pause();
+    this.player.setTint(0xff0000);
+
+    this.player.anims.play('turn');
+
+    this.gameOver = true;
   }
 
   update() {
