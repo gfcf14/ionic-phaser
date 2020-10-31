@@ -10,7 +10,8 @@ export class GameScene extends Phaser.Scene {
   bombs: Phaser.Physics.Arcade.Group;
   gameOver: boolean;
   pauseKey: Phaser.Input.Keyboard.Key;
-  isPaused: boolean;
+  isPaused: boolean = false;
+  xKey: Phaser.Input.Keyboard.Key;
 
   constructor() {
     super({ key: 'game' });
@@ -106,20 +107,20 @@ export class GameScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.pauseKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-    // this.pauseKey.on('up', (e) => {
-    //   console.log('toggling pause now');
-    //   this.togglePause();
-    // });
+    this.pauseKey.on('up', (e) => {
+      console.log('toggling pause now');
+      this.togglePause();
+    });
   }
 
   togglePause() {
     if (this.isPaused) {
-      this.scene.resume('game');
+      this.physics.resume();
     } else {
-      this.scene.pause();
+      this.physics.pause();
     }
 
-    this.isPaused != this.isPaused;
+    this.isPaused = !this.isPaused;
   }
 
   collectStar(player, star) {
@@ -152,10 +153,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   update() {
-    if (this.cursors.left.isDown) {
+    if (this.cursors.left.isDown && !this.isPaused) {
       this.player.setVelocityX(-160);
       this.player.anims.play('left', true);
-    } else if (this.cursors.right.isDown) {
+    } else if (this.cursors.right.isDown && !this.isPaused) {
       this.player.setVelocityX(160);
       this.player.anims.play('right', true);
     }  else {
