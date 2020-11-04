@@ -1,6 +1,9 @@
 import * as Phaser from 'phaser';
 
 export class GameScene extends Phaser.Scene {
+  halfWidth: number = 400;
+  halfHeight: number = 300;
+
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   platforms: Phaser.Physics.Arcade.StaticGroup;
   player: Phaser.Physics.Arcade.Sprite;
@@ -12,6 +15,7 @@ export class GameScene extends Phaser.Scene {
   pauseKey: Phaser.Input.Keyboard.Key;
   isPaused: boolean = false;
   xKey: Phaser.Input.Keyboard.Key;
+  pauseGroup: Phaser.GameObjects.Group;
 
   constructor() {
     super({ key: 'game' });
@@ -35,11 +39,36 @@ export class GameScene extends Phaser.Scene {
     this.addPlayer();
     this.addStars();
 
-    this.scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+    this.scoreText = this.add.text(16, 16, 'score: 0', { fontSize: 32, fill: '#000000' });
     this.bombs = this.physics.add.group();
+
+    this.addPauseText();
 
     this.addCollisionEvents();
     this.addKeyboardEvents();
+  }
+
+  addPauseText() {
+    this.pauseGroup = this.add.group();
+
+    let pauseTitle = this.add.text(this.halfWidth, this.halfHeight, "GAME PAUSED", { fontSize: 64, fill: '#00b456' });
+    pauseTitle.setX(pauseTitle.x - (pauseTitle.width / 2));
+    pauseTitle.setY(pauseTitle.y - pauseTitle.height);
+
+    let pauseCue = this.add.text(this.halfWidth, this.halfHeight, 'Press SPACE to resume', { fontSize: 32, fill: '#00b456' });
+    pauseCue.setX(pauseCue.x - (pauseCue.width / 2));
+    pauseCue.setY(pauseCue.y - (pauseCue.height / 4));
+
+    this.pauseGroup.add(pauseTitle);
+    this.pauseGroup.add(pauseCue);
+    this.pauseGroup.setAlpha(0);
+
+    this.add.tween({
+      targets: this.pauseGroup,
+      ease: 'Linear',
+      duration: 1000,
+      alpha: { from: 0, to: 1 }
+    });
   }
 
   addPlatforms() {
@@ -108,7 +137,6 @@ export class GameScene extends Phaser.Scene {
     this.pauseKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     this.pauseKey.on('up', (e) => {
-      console.log('toggling pause now');
       this.togglePause();
     });
   }
@@ -121,6 +149,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.isPaused = !this.isPaused;
+    this.pauseGroup.setAlpha( + this.isPaused);
   }
 
   collectStar(player, star) {
