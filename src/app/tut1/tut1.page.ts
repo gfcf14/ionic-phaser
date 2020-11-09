@@ -1,7 +1,10 @@
+// https://www.youtube.com/watch?v=7cpZ5Y7THmo
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import * as Phaser from 'phaser';
-import { GameScene } from './game';
+import { Example1 } from './example1';
+import { Example2 } from './example2';
+import { Example3 } from './example3';
 
 @Component({
   selector: 'app-tut1',
@@ -20,7 +23,7 @@ export class Tut1Page implements OnInit, OnDestroy {
       physics: {
         default: 'arcade',
         arcade: {
-          gravity: { y: 300 },
+          gravity: { y: 200 },
           debug: false
         }
       },
@@ -28,7 +31,7 @@ export class Tut1Page implements OnInit, OnDestroy {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
       },
-      scene: GameScene,
+      scene: [ Example1, Example2, Example3 ],
       type: Phaser.AUTO,
       // width: this.plt.width()
       width: 800
