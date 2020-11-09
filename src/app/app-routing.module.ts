@@ -11,6 +11,14 @@ const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full'
   },
+  {
+    path: 'tut1',
+    loadChildren: () => import('./tut1/tut1.module').then( m => m.Tut1PageModule)
+  },
+  {
+    path: 'generic',
+    loadChildren: () => import('./generic/generic.module').then( m => m.GenericPageModule)
+  },
 ];
 
 @NgModule({
