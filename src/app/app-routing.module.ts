@@ -19,6 +19,10 @@ const routes: Routes = [
     path: 'generic',
     loadChildren: () => import('./generic/generic.module').then( m => m.GenericPageModule)
   },
+  {
+    path: 'tut2',
+    loadChildren: () => import('./tut2/tut2.module').then( m => m.Tut2PageModule)
+  },
 ];
 
 @NgModule({
