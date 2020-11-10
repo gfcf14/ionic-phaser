@@ -17,6 +17,9 @@ export class Tut1Page implements OnInit, OnDestroy {
 
   constructor(private plt: Platform) {
     this.config = {
+      audio: {
+        disableWebAudio: true
+      },
       // height: this.plt.height(),
       height: 600,
       parent: 'gameContainer',
