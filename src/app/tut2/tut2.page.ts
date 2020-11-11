@@ -1,5 +1,5 @@
+// https://www.youtube.com/watch?v=hI_LS8bdkM4
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Platform } from '@ionic/angular';
 import * as Phaser from 'phaser';
 import { GameScene } from './game';
 
@@ -12,26 +12,13 @@ export class Tut2Page implements OnInit, OnDestroy {
   config: Phaser.Types.Core.GameConfig;
   game: Phaser.Game;
 
-  constructor(private plt: Platform) {
+  constructor() {
     this.config = {
-      // height: this.plt.height(),
-      height: 600,
+      height: 360,
       parent: 'gameContainer',
-      physics: {
-        default: 'arcade',
-        arcade: {
-          gravity: { y: 300 },
-          debug: false
-        }
-      },
-      scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-      },
       scene: GameScene,
       type: Phaser.AUTO,
-      // width: this.plt.width()
-      width: 800
+      width: 640
     };
   }
 

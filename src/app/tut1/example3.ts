@@ -11,7 +11,7 @@ export class Example3 extends Phaser.Scene {
   preload() {
     this.load.setPath('../assets/');
 
-    this.load.audio('sword', ['sword.ogg']);
+    this.load.audio('sword', ['sword.wav']);
   }
 
   create() {
