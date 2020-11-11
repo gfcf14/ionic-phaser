@@ -23,6 +23,10 @@ const routes: Routes = [
     path: 'tut2',
     loadChildren: () => import('./tut2/tut2.module').then( m => m.Tut2PageModule)
   },
+  {
+    path: 'tut3',
+    loadChildren: () => import('./tut3/tut3.module').then( m => m.Tut3PageModule)
+  },
 ];
 
 @NgModule({
