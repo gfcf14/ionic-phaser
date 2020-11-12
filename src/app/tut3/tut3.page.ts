@@ -1,7 +1,7 @@
-// https://www.youtube.com/watch?v=IQs_pze2SsA&list=PL9iYZZWgVwsfd3z_wowmPYNOLOkqTvTRd
+// https://learn.yorkcs.com/build-a-space-shooter-with-phaser-3/
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as Phaser from 'phaser';
-import { mainScene } from './main-scene';
+import { GameScene } from './game';
 
 @Component({
   selector: 'app-tut3',
@@ -23,7 +23,7 @@ export class Tut3Page implements OnInit, OnDestroy {
       //     debug: false
       //   }
       // },
-      scene: mainScene,
+      scene: GameScene,
       type: Phaser.AUTO,
       width: 800
     };
