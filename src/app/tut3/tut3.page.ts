@@ -16,18 +16,20 @@ export class Tut3Page implements OnInit, OnDestroy {
 
   constructor() {
     this.config = {
-      height: 600,
+      backgroundColor: '#000000',
+      height: 640,
       parent: 'gameContainer',
-      // physics: {
-      //   default: 'arcade',
-      //   arcade: {
-      //     gravity: { y: 300 },
-      //     debug: false
-      //   }
-      // },
-      scene: [ GameOver, Main, MainMenu ],
-      type: Phaser.AUTO,
-      width: 800
+      physics: {
+        default: 'arcade',
+        arcade: {
+          gravity: { x: 0, y: 0 }
+        }
+      },
+      // pixelArt: true,
+      // roundPixels: true,
+      scene: [ MainMenu, Main, GameOver ],
+      type: Phaser.WEBGL,
+      width: 480
     };
   }
 

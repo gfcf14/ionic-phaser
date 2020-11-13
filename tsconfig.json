@@ -13,7 +13,7 @@
     "target": "es2015",
     "typeRoots": ["./node_modules/phaser/types"],
     "types": ["Phaser"],
-    "lib": [ "es2018", "dom", "scripthost" ]
+    "lib": [ "es2018", "dom", "scripthost" ],
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
