@@ -1,6 +1,6 @@
-import { Player } from './player';
+// import { Player } from './player';
 import * as Phaser from 'phaser';
-import { CarrierShip, ChaserShip, GunShip } from './entities';
+import { CarrierShip, ChaserShip, GunShip, Player } from './entities';
 
 export class Main extends Phaser.Scene {
   sfx: { explosions: Phaser.Sound.BaseSound[]; laser: Phaser.Sound.BaseSound; };
