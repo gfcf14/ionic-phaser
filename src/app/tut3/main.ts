@@ -1,6 +1,6 @@
 // import { Player } from './player';
 import * as Phaser from 'phaser';
-import { CarrierShip, ChaserShip, GunShip, Player } from './entities';
+import { CarrierShip, ChaserShip, EnemyLaser, Entity, GunShip, Player, PlayerLaser } from './entities';
 
 export class Main extends Phaser.Scene {
   sfx: { explosions: Phaser.Sound.BaseSound[]; laser: Phaser.Sound.BaseSound; };
@@ -105,7 +105,7 @@ export class Main extends Phaser.Scene {
     this.time.addEvent({
       delay: 1000,
       callback: () => {
-        let enemy = null;
+        let enemy: Entity = null;
 
         if (Phaser.Math.Between(0, 10) >= 3) {
           enemy = new GunShip(this, Phaser.Math.Between(0, this.cameras.main.width), 0);
@@ -125,38 +125,65 @@ export class Main extends Phaser.Scene {
       callbackScope: this,
       loop: true
     });
+
+    this.physics.add.collider(this.playerLasers, this.enemies, (playerLaser: PlayerLaser, enemy: Entity) => {
+      if (enemy) {
+        if (enemy instanceof GunShip) {
+          enemy.onDestroy();
+        }
+
+        enemy.explode(true);
+        playerLaser.destroy();
+      }
+    });
+
+    this.physics.add.overlap(this.player, this.enemies, (player: Player, enemy: Entity) => {
+      if (!player.getData('isDead') && !enemy.getData('isDead')) {
+        player.explode(false);
+        enemy.explode(true);
+      }
+    });
+
+    this.physics.add.collider(this.player, this.enemyLasers, (player: Player, laser: EnemyLaser) => {
+      if (!player.getData('isDead') && !laser.getData('isDead')) {
+        player.explode(false);
+        laser.destroy();
+      }
+    });
   }
 
   update() {
-    this.player.update();
+    if (!this.player.getData('isDead')) {
+      this.player.update();
 
-    if (this.keyW.isDown) {
-      this.player.moveUp();
-    } else if (this.keyS.isDown) {
-      this.player.moveDown();
-    }
+      if (this.keyW.isDown) {
+        this.player.moveUp();
+      } else if (this.keyS.isDown) {
+        this.player.moveDown();
+      }
 
-    if (this.keyA.isDown) {
-      this.player.moveLeft();
-    } else if (this.keyD.isDown) {
-      this.player.moveRight();
-    }
+      if (this.keyA.isDown) {
+        this.player.moveLeft();
+      } else if (this.keyD.isDown) {
+        this.player.moveRight();
+      }
 
-    if (this.keySpace.isDown) {
-      this.player.setData('isShooting', true);
-    } else {
-      this.player.setData('timerShootTick', this.player.getData('timerShootDelay') - 1);
-      this.player.setData('isShooting', false);
+      if (this.keySpace.isDown) {
+        this.player.setData('isShooting', true);
+      } else {
+        this.player.setData('timerShootTick', this.player.getData('timerShootDelay') - 1);
+        this.player.setData('isShooting', false);
+      }
     }
 
     for (let i = 0; i < this.enemies.getChildren().length; i++) {
-      let enemy = this.enemies.getChildren()[i];
+      let enemy = this.enemies.getChildren()[i] as Entity;
 
       enemy.update();
 
-      if (enemy.x < -enemy.displayWidth || enemy.x > this.game.config.width + enemy.displayWidth || enemy.y < -enemy.displayHeight * 4 || enemy.y > this.game.config.height + enemy.displayHeight) {
+      if (enemy.x < -enemy.displayWidth || enemy.x > this.cameras.main.width + enemy.displayWidth || enemy.y < -enemy.displayHeight * 4 || enemy.y > this.cameras.main.height + enemy.displayHeight) {
         if (enemy) {
-          if (enemy.onDestroy !== undefined) {
+          if (enemy instanceof GunShip) {
             enemy.onDestroy();
           }
 
@@ -164,17 +191,40 @@ export class Main extends Phaser.Scene {
         }
       }
     }
+
+    for (let i = 0; i < this.enemyLasers.getChildren().length; i++) {
+      let laser = this.enemyLasers.getChildren()[i] as Entity;
+
+      laser.update();
+
+      if (laser.x < laser.displayWidth || laser.x > this.cameras.main.width + laser.displayWidth || laser.y < -laser.displayHeight * 4 || laser.y > this.cameras.main.height + laser.displayHeight) {
+        if (laser) {
+          laser.destroy();
+        }
+      }
+    }
+
+    for (let i = 0; i < this.playerLasers.getChildren().length; i++) {
+      let laser = this.playerLasers.getChildren()[i] as Entity;
+
+      laser.update();
+
+      if (laser.x < -laser.displayWidth || laser.x > this.cameras.main.width + laser.displayWidth || laser.y < -laser.displayHeight * 4 || laser.y > this.cameras.main.height + laser.displayHeight) {
+        if (laser) {
+          laser.destroy();
+        }
+      }
+    }
   }
 
   getEnemiesByType(type) {
     let arr = [];
-    for (let i = 0; i < this.enemies.getChildren().length; i++) {
-      let enemy = this.enemies.getChildren()[i];
 
+    this.enemies.children.iterate((enemy: CarrierShip | ChaserShip | GunShip) => {
       if (enemy.getData('type') == type) {
         arr.push(enemy);
       }
-    }
+    });
 
     return arr;
   }

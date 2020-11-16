@@ -1,6 +1,9 @@
 import * as Phaser from 'phaser';
+import { Main } from './main';
 
 export class Entity extends Phaser.GameObjects.Sprite {
+  scene: Main;
+
   constructor(scene, x, y, key, type) {
     super(scene, x, y, key);
 
@@ -10,9 +13,42 @@ export class Entity extends Phaser.GameObjects.Sprite {
     this.setData('type', type);
     this.setData('isDead', false);
   }
+
+  explode(canDestroy) {
+    if (!this.getData('isDead')) {
+      this.setTexture('sprExplosion');
+      this.play('sprExplosion');
+
+      this.scene.sfx.explosions[Phaser.Math.Between(0, this.scene.sfx.explosions.length - 1)].play();
+
+      if (this instanceof GunShip) {
+        if (this.shootTimer) {
+          this.shootTimer.remove(false);
+        }
+      }
+
+      this.setAngle(0);
+
+      if ('setVelocity' in this.body) {
+        this.body.setVelocity(0, 0);
+      }
+
+      this.on('animationcomplete', () => {
+        if (canDestroy) {
+          this.destroy();
+        } else {
+          this.setVisible(false);
+        }
+      }, this);
+
+      this.setData('isDead', true);
+    }
+  }
 }
 
 export class Player extends Entity {
+  scene: Main;
+
   constructor(scene, x, y, key) {
     super(scene, x, y, key, 'Player');
 
@@ -45,8 +81,8 @@ export class Player extends Entity {
       this.body.setVelocity(0, 0);
     }
 
-    this.x = Phaser.Math.Clamp(this.x, 0, this.scene.game.config.width);
-    this.y = Phaser.Math.Clamp(this.y, 0, this.scene.game.config.height);
+    this.x = Phaser.Math.Clamp(this.x, 0, this.scene.cameras.main.width);
+    this.y = Phaser.Math.Clamp(this.y, 0, this.scene.cameras.main.height);
 
     if (this.getData('isShooting')) {
       if (this.getData('timerShootTick') < this.getData('timerShootDelay')) {
@@ -54,9 +90,7 @@ export class Player extends Entity {
         this.setData('timerShootTick', this.getData('timerShootTick') + 1);
       } else { // when the "manual timer" is triggered:
         let laser = new PlayerLaser(this.scene, this.x, this.y);
-
         this.scene.playerLasers.add(laser);
-
         this.scene.sfx.laser.play();
         this.setData('timerShootTick', 0);
       }
@@ -65,6 +99,7 @@ export class Player extends Entity {
 }
 
 export class ChaserShip extends Entity {
+  scene: Main;
   states: { MOVE_DOWN: string; CHASE: string; };
 
   constructor(scene, x, y) {
@@ -108,6 +143,9 @@ export class ChaserShip extends Entity {
 }
 
 export class GunShip extends Entity {
+  scene: Main;
+  shootTimer: Phaser.Time.TimerEvent;
+
   constructor(scene, x, y) {
     super(scene, x, y, 'sprEnemy0', 'GunShip');
 
