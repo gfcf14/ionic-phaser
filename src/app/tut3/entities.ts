@@ -96,6 +96,17 @@ export class Player extends Entity {
       }
     }
   }
+
+  onDestroy() {
+    this.scene.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.scene.scene.start('game-over');
+      },
+      callbackScope: this,
+      loop: false
+    });
+  }
 }
 
 export class ChaserShip extends Entity {
@@ -196,5 +207,49 @@ export class PlayerLaser extends Entity {
     super(scene, x, y, 'sprLaserPlayer', 'LaserPlayer');
 
     this.body.velocity.y = -200;
+  }
+}
+
+export class ScrollingBackground {
+  key: string;
+  layers: Phaser.GameObjects.Group;
+  scene: Main;
+  velocity: number;
+
+  constructor(scene, key, velocity) {
+    this.scene = scene;
+    this.key = key;
+    this.velocity = velocity;
+
+    this.layers = this.scene.add.group();
+
+    this.createLayers();
+  }
+
+  createLayers() {
+    for (let i = 0; i < 2; i++) {
+      let layer = this.scene.add.sprite(0, 0, this.key);
+      layer.y = layer.displayHeight * i;
+
+      let flipX = Phaser.Math.Between(0, 10) >= 5 ? -1 : 1;
+      let flipY = Phaser.Math.Between(0, 10) >= 5 ? -1 : 1;
+
+      layer.setScale(flipX * 2, flipY * 2);
+      layer.setDepth(-5 - (i - 1));
+      this.scene.physics.world.enableBody(layer, 0);
+      layer.body.velocity.y = this.velocity;
+
+      this.layers.add(layer);
+    }
+  }
+
+  update() {
+    if ((this.layers.getChildren()[0] as Phaser.GameObjects.Sprite).y > 0) {
+      for (let i = 0; i < this.layers.getChildren().length; i++) {
+        let layer = this.layers.getChildren()[i] as Phaser.GameObjects.Sprite;
+
+        layer.y = (-layer.displayHeight) + (layer.displayHeight * i);
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
 // import { Player } from './player';
 import * as Phaser from 'phaser';
-import { CarrierShip, ChaserShip, EnemyLaser, Entity, GunShip, Player, PlayerLaser } from './entities';
+import { CarrierShip, ChaserShip, EnemyLaser, Entity, GunShip, Player, PlayerLaser, ScrollingBackground } from './entities';
 
 export class Main extends Phaser.Scene {
   sfx: { explosions: Phaser.Sound.BaseSound[]; laser: Phaser.Sound.BaseSound; };
@@ -13,6 +13,7 @@ export class Main extends Phaser.Scene {
   enemies: Phaser.GameObjects.Group;
   enemyLasers: Phaser.GameObjects.Group;
   playerLasers: Phaser.GameObjects.Group;
+  backgrounds: ScrollingBackground[];
 
   constructor() {
     super({ key: 'main' });
@@ -20,9 +21,6 @@ export class Main extends Phaser.Scene {
 
   preload() {
     this.load.setPath('../assets/tut3/');
-
-    this.load.image('sprBg0', 'sprBg0.png');
-    this.load.image('sprBg1', 'sprBg1.png');
 
     this.load.spritesheet('sprExplosion', 'sprExplosion.png', {
       frameHeight: 32,
@@ -90,6 +88,13 @@ export class Main extends Phaser.Scene {
       laser: this.sound.add('sndLaser')
     };
 
+    this.backgrounds = [];
+
+    for (let i = 0; i < 5; i++) { // for 5 scrolling backgrounds
+      let bg = new ScrollingBackground(this, 'sprBg0', i * 10);
+      this.backgrounds.push(bg);
+    }
+
     this.player = new Player(this, this.cameras.main.width * 0.5, this.cameras.main.height * 0.5, 'sprPlayer');
 
     this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
@@ -140,6 +145,7 @@ export class Main extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.enemies, (player: Player, enemy: Entity) => {
       if (!player.getData('isDead') && !enemy.getData('isDead')) {
         player.explode(false);
+        player.onDestroy();
         enemy.explode(true);
       }
     });
@@ -147,6 +153,7 @@ export class Main extends Phaser.Scene {
     this.physics.add.collider(this.player, this.enemyLasers, (player: Player, laser: EnemyLaser) => {
       if (!player.getData('isDead') && !laser.getData('isDead')) {
         player.explode(false);
+        player.onDestroy();
         laser.destroy();
       }
     });
@@ -214,6 +221,10 @@ export class Main extends Phaser.Scene {
           laser.destroy();
         }
       }
+    }
+
+    for (let i = 0; i < this.backgrounds.length; i++) {
+      this.backgrounds[i].update();
     }
   }
 
